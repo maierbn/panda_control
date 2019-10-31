@@ -34,5 +34,5 @@ if(STRICT)
 endif()
 
 add_subdirectory(resources/from_libfranka)
-add_subdirectory(source)
+add_subdirectory(src)
 add_subdirectory(documentation)
