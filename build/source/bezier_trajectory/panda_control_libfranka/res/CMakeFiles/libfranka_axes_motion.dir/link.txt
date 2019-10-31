@@ -1,2 +1,0 @@
-/usr/bin/ar qc liblibfranka_axes_motion.a  CMakeFiles/libfranka_axes_motion.dir/from_libfranka/examples_common.cpp.o
-/usr/bin/ranlib liblibfranka_axes_motion.a

@@ -1,1 +1,0 @@
-/usr/bin/c++  -O3 -DNDEBUG   CMakeFiles/gripper_demo.dir/gripper_control.cpp.o  -o gripper_demo -Wl,-rpath,/store/software/libfranka/build /store/software/libfranka/build/libfranka.so.0.7.1 

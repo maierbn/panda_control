@@ -1,1 +1,0 @@
-/usr/bin/c++  -O3 -DNDEBUG   CMakeFiles/peg_in_hole.dir/main_peg_in_hole.cpp.o CMakeFiles/peg_in_hole.dir/trajectory/peg_in_hole_trajectory.cpp.o CMakeFiles/peg_in_hole.dir/trajectory/bezier_trajectory.cpp.o  -o peg_in_hole -Wl,-rpath,/store/software/libfranka/build panda_control_libfranka/src/libtrajectory_planner.a /store/software/libfranka/build/libfranka.so.0.7.1 
