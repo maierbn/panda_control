@@ -1,0 +1,19 @@
+[Buildset]
+BuildItems=@Variant(\x00\x00\x00\t\x00\x00\x00\x00\x01\x00\x00\x00\x0b\x00\x00\x00\x00\x01\x00\x00\x00"\x00b\x00e\x00z\x00i\x00e\x00r\x00_\x00t\x00r\x00a\x00j\x00e\x00c\x00t\x00o\x00r\x00y)
+
+[CMake]
+Build Directory Count=1
+Current Build Directory Index-Host System=0
+
+[CMake][CMake Build Directory 0]
+Build Directory Path=/store/wiss/2018/15_robot_handling_reduced/peg-in-hole/source/bezier_trajectory/build
+Build Type=
+CMake Binary=/usr/bin/cmake
+CMake Executable=/usr/bin/cmake
+Environment Profile=
+Extra Arguments=
+Install Directory=/usr/local
+Runtime=Host System
+
+[Project]
+VersionControlSupport=kdevgit

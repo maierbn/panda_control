@@ -1,0 +1,4 @@
+[submodule "source/bezier_trajectory/panda_control_libfranka"]
+	path = source/bezier_trajectory/panda_control_libfranka
+	url = git@git.isw.uni-stuttgart.de:projekte/forschung/2017_DFG_IRTG_SoftTissueRobotics/panda_control_libfranka.git
+	branch = master
