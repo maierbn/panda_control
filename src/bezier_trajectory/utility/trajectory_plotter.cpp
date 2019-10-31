@@ -1,7 +1,11 @@
 #include "trajectory_plotter.h"
 
 #include <iostream>
+
+#include "utility/eigen_utility.h"
+
 #include <eigen3/Eigen/Eigen>
+#include <eigen3/Eigen/Geometry>
 
 TrajectoryPlotter::TrajectoryPlotter(CartesianPose startPose, std::shared_ptr<Trajectory> trajectory, double samplingTimestepWidth)
 {
@@ -18,21 +22,22 @@ TrajectoryPlotter::TrajectoryPlotter(CartesianPose startPose, std::shared_ptr<Tr
   CartesianPose currentPose;
   for (int i = 0; i < nEntries; i++)
   {
-    Eigen::Vector3d pose = posVelocities.col(i);
+    /*Eigen::Vector3d pose = poseVelocities.col(i);
     
-    double roll = pose[3];
-    double pitch = pose[4];
-    double yaw = pose[5];
+    double roll = pose[3] * dt;
+    double pitch = pose[4] * dt;
+    double yaw = pose[5] * dt;
 
-    Quaterniond rotation;
-    rotation = AngleAxisd(roll, Vector3f::UnitX())
-        * AngleAxisd(pitch, Vector3f::UnitY())
-        * AngleAxisd(yaw, Vector3f::UnitZ());
+    Eigen::Quaterniond rotation;
+    rotation = Eigen::AngleAxisd(roll, Eigen::Vector3d::UnitX())
+        * Eigen::AngleAxisd(pitch, Eigen::Vector3d::UnitY())
+        * Eigen::AngleAxisd(yaw, Eigen::Vector3d::UnitZ());
     
     Eigen::Vector3d velocity = pose.head<3>();
 
     currentPose.position += velocity * dt;
-    currentPose.orientation *= rotation * dt;
+    currentPose.orientation *= rotation;
+    */
   }
 }
 
