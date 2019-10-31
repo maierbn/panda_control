@@ -83,6 +83,18 @@ CartesianPose curve(double t)
 
 int main()
 {
+
+  CartesianPose restingPose;
+  restingPose.position <<  0.384663, -0.380291, 0.204745;  // right, above the wooden bottom plate
+    
+
+  const double samplingTimestepWidth = 1e-3;
+  SmoothCurveTrajectory curveTrajectory(restingPose, curve, endTime, samplingTimestepWidth);
+
+  TrajectoryPlotter trajectoryPlotter(restingPose, std::make_shared<SmoothCurveTrajectory>(curveTrajectory), samplingTimestepWidth);
+  trajectoryPlotter.plot();
+
+
   std::cout << "connect to robot " << std::endl;
   franka::Robot panda(robot_ip);
 

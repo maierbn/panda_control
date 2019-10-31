@@ -6,6 +6,7 @@
 
 #include <eigen3/Eigen/Eigen>
 #include <eigen3/Eigen/Geometry>
+#include <fstream>
 
 TrajectoryPlotter::TrajectoryPlotter(CartesianPose startPose, std::shared_ptr<Trajectory> trajectory, double samplingTimestepWidth)
 {
@@ -15,14 +16,19 @@ TrajectoryPlotter::TrajectoryPlotter(CartesianPose startPose, std::shared_ptr<Tr
   int nEntries = poseVelocities.size();
   std::cout << "nEntries: " << nEntries << std::endl;
 
-  const double dt = 0.1;
+  const double dt = samplingTimestepWidth;
 
-  //Eigen::Matrix5dynd 
+  std::stringstream pythonScript;
 
-  CartesianPose currentPose;
+  pythonScript << "#!/usr/bin/python\n\n" 
+    << "import numpy as np\n"
+    << "import matplotlib.pyplot as plt\n\n"
+    << "poses = [\n";
+
+  CartesianPose currentPose = startPose;
   for (int i = 0; i < nEntries; i++)
   {
-    /*Eigen::Vector3d pose = poseVelocities.col(i);
+    Eigen::Vector6d pose = poseVelocities.col(i);
     
     double roll = pose[3] * dt;
     double pitch = pose[4] * dt;
@@ -37,8 +43,24 @@ TrajectoryPlotter::TrajectoryPlotter(CartesianPose startPose, std::shared_ptr<Tr
 
     currentPose.position += velocity * dt;
     currentPose.orientation *= rotation;
-    */
+    
+    Eigen::Vector3d eulerAngles = currentPose.orientation.toRotationMatrix().eulerAngles(2,1,0);
+
+    pythonScript << currentPose.position[0] << "," << currentPose.position[1] << "," << currentPose.position[2] << "," 
+      << eulerAngles[0] << "," << eulerAngles[1] << "," << std::endl;
   }
+  pythonScript << "]\n";
+
+  std::ofstream file("plot_poses.py");
+  if (!file.is_open())
+  {
+    std::cout << "Could not write to file \"plot_poses.py\"." << std::endl;
+    return;
+  }
+  
+  file << pythonScript.str();
+  file.close();
+  std::cout << "wrote file plot_poses.py" << std::endl;
 }
 
 void TrajectoryPlotter::plot()
