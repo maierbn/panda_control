@@ -84,6 +84,17 @@ CartesianPose CartesianPose::operator+(const CartesianPose &rhs)
   return result;
 }
 
+// addition operator
+CartesianPose CartesianPose::operator+(const CartesianPose &rhs) const
+{
+  CartesianPose result(*this);
+  result.position += rhs.position;
+  result.orientation.normalize();
+  result.orientation *= rhs.orientation;
+
+  return result;
+}
+
 //! addition assignment operator
 CartesianPose &CartesianPose::operator+=(const CartesianPose &rhs)
 {
@@ -107,6 +118,17 @@ CartesianPose CartesianPose::operator-(const CartesianPose &rhs)
 
 //! multiplication operator
 CartesianPose CartesianPose::operator*(double factor)
+{
+  CartesianPose result(*this);
+  result.position *= factor;
+  result.orientation.normalize();
+  result.orientation = neutralOrientation.slerp(factor, orientation);  // scale rotation from neutral to current orientation
+
+  return result;
+}
+
+//! multiplication operator
+CartesianPose CartesianPose::operator*(double factor) const
 {
   CartesianPose result(*this);
   result.position *= factor;

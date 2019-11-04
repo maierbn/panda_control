@@ -13,6 +13,7 @@ include_directories(PUBLIC panda_control_libfranka/src)
 add_executable(${PROJECT_NAME} 
   main_smooth_curve.cpp
   utility/trajectory_plotter.cpp
+  trajectory/bezier_trajectory.cpp
 )
 target_link_libraries(${PROJECT_NAME} trajectory_planner Franka::Franka)
 target_include_directories(${PROJECT_NAME} PUBLIC trajectory)

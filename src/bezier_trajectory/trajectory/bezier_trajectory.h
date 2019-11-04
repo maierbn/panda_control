@@ -15,6 +15,8 @@ public:
 
 private:
 
+  //SmoothCurveTrajectory smoothCurveTrajectory
+
 	//! B-spline ansatz function B_i,n where i >= 0 is the number, n is the order, x is the coordinate
 	double basis(int i, int n, double x);
 
@@ -22,8 +24,8 @@ private:
 	void generateKnotVector();
 
 	std::vector<CartesianPose> &poses_;   //< the provided poses that should be interpolated
-	std::vector<double> knotVector_;      //< knot vector for the spline curve
 	double p_;   													//< polynomial degree of the ansatz functions
-	double nBasisFunctions_;							//< number of poses = number of basis functions
 	double targetMultiplicity_;          //< multiplicity of the knots, degree of continuity = p - multiplicity
+	std::vector<double> knotVector_;      //< knot vector for the spline curve
+	double nBasisFunctions_ = 0;							//< number of poses = number of basis functions
 };

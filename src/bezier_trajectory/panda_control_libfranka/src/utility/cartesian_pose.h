@@ -42,6 +42,9 @@ struct CartesianPose
   //! addition operator
   CartesianPose operator+(const CartesianPose &rhs);
 
+  //! addition operator
+  CartesianPose operator+(const CartesianPose &rhs) const;
+
   //! addition assignment operator
   CartesianPose &operator+=(const CartesianPose &rhs);
 
@@ -50,6 +53,9 @@ struct CartesianPose
 
   //! multiplication operator
   CartesianPose operator*(double factor);
+  
+  //! multiplication operator
+  CartesianPose operator*(double factor) const;
 
   //! compute the difference in translation and rotation to another CartesianPose (rhs-this), result is [dx,dy,dz,dwx,dwy,dwz]
   Eigen::Vector6d getDifferenceTo(const CartesianPose &rhs) const;

@@ -2,6 +2,7 @@
 #include "trajectory/linear_trajectory.h"
 #include "trajectory/curve_trajectory.h"
 #include "trajectory/smooth_curve_trajectory.h"
+#include "trajectory/bezier_trajectory.h"
 #include "utility/trajectory_plotter.h"
 
 #include <franka/exception.h>
@@ -21,7 +22,7 @@ void setDefaultBehaviour(franka::Robot &robot);
 // global vector of poses, to be used in the curve function
 std::vector<std::array<double,5>> poses;
 
-const double endTime = 5.0;    // duration of the trajectory curve(t), t ∈ [0,endTime]
+const double endTime = 15.0;    // duration of the trajectory curve(t), t ∈ [0,endTime]
 
 /** example curve function used for the trajectory */
 CartesianPose curve(double t)
@@ -124,6 +125,7 @@ int main()
     }
   }
 
+#if 0
   CartesianPose restingPose;
   //restingPose.position <<  0.384663, -0.380291, 0.204745;  // right, above the wooden bottom plate
     
@@ -138,7 +140,7 @@ int main()
 
   TrajectoryPlotter trajectoryPlotter(restingPose, std::make_shared<TrajectoryType>(curveTrajectory), samplingTimestepWidth);
   trajectoryPlotter.plot();
-
+#endif
 
   std::cout << "connect to robot " << std::endl;
   franka::Robot panda(robot_ip);
@@ -163,21 +165,24 @@ int main()
     restingPose.position << 0.0325709,-0.332922,0.220434;       // left, above the wooden bottom plate
     restingPose.position[2] += 0.31067;   // move to start position above bottom
    
+    restingPose.position << -0.0148937,-0.369952,0.602289;    // center, for above plate
+
     restingPose.orientation = CartesianPose::neutralOrientation;
     //restingPose.orientation = Eigen::Quaterniond(0.0, 0.0, 1.0, 0.0); // rotated by 180deg around z axis (such that gripper can rotate ccw)
     /* 
     Eigen::AngleAxisd angle(-M_PI_2, Eigen::Vector3d::UnitZ());
     restingPose.orientation = restingPose.orientation * Eigen::Quaterniond(angle);
 */
+#if 0
     // LinearTrajectory and TrajectoryIteratorCartesianVelocity object creation
-    LinearTrajectory linearTrajectory(initialPose, restingPose, 0.05, 0.05, 1.e-3);
+    LinearTrajectory linearTrajectory(initialPose, restingPose, 0.2, 0.2, 1.e-3);
     auto motionIterator = std::make_unique<TrajectoryIteratorCartesianVelocity>(linearTrajectory);
     
     // move to resting pose
     std::cout << " \aRobot will move to resting pose, press Enter.";
     std::cin.get();
     panda.control(*motionIterator, /*controller_mode = */ franka::ControllerMode::kCartesianImpedance);
-    
+#endif    
     // read current pose for debugging
     franka::RobotState currentState = panda.readOnce();
     CartesianPose currentPose(currentState.O_T_EE);
@@ -186,9 +191,39 @@ int main()
 
     // define trajectory from resting pose along curve
     const double samplingTimestepWidth = 1e-3;
-    SmoothCurveTrajectory curveTrajectory(restingPose, curve, endTime, samplingTimestepWidth);
+    //SmoothCurveTrajectory curveTrajectory(restingPose, curve, endTime, samplingTimestepWidth);
 
-    TrajectoryPlotter trajectoryPlotter(restingPose, std::make_shared<SmoothCurveTrajectory>(curveTrajectory), samplingTimestepWidth);
+    // define Bezier trajectory
+    // setup poses
+    std::vector<CartesianPose> cartesianPoses(poses.size());
+
+    for (int i = 0; i < poses.size(); i++)
+    {
+      // transform from poses array (x,y,z,phi,theta) to Cartesian Pose
+      cartesianPoses[i].position[0] = poses[i][0];
+      cartesianPoses[i].position[1] = poses[i][1];
+      cartesianPoses[i].position[2] = poses[i][2];
+
+      // transform from centi-meters to meters
+      cartesianPoses[i].position *= 1e-2;
+
+      // no angle change
+      cartesianPoses[i].orientation = CartesianPose::neutralOrientation;
+      
+      double theta = poses[i][3];
+      double phi = poses[i][4];
+
+      Eigen::AngleAxisd angle0(phi, Eigen::Vector3d::UnitZ());
+      Eigen::AngleAxisd angle1(M_PI/2. - theta, Eigen::Vector3d::UnitY());
+
+      cartesianPoses[i].orientation = Eigen::Quaterniond(angle1) * Eigen::Quaterniond(angle0) * CartesianPose::neutralOrientation;
+    }
+
+    int p = 3;
+    int continuity = 2;
+    BezierTrajectory curveTrajectory(restingPose, cartesianPoses, p, continuity, endTime, samplingTimestepWidth);
+
+    TrajectoryPlotter trajectoryPlotter(restingPose, std::make_shared<BezierTrajectory>(curveTrajectory), samplingTimestepWidth);
     trajectoryPlotter.plot();
 
     // move along trajectory 
