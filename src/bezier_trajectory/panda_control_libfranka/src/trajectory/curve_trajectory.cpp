@@ -112,7 +112,7 @@ Eigen::Matrix6dynd CurveTrajectory::poseVelocities() const
   std::cout << "CurveTrajectory" << std::endl;
   std::cout << "    from: " << initialPose_ << std::endl;
   std::cout << "      to: " << endPose << std::endl;
-  std::cout << "  dt: " << dt_ << " m, duration: " << endTime_ << " s, " << nSteps << " steps." << std::endl;
+  std::cout << "  dt: " << dt_ << " s, duration: " << endTime_ << " s, " << nSteps << " steps." << std::endl;
   std::cout << std::endl;
 
   Eigen::Matrix6dynd velocities(6,nSteps);

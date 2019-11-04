@@ -28,7 +28,7 @@ CartesianPose::CartesianPose(const std::array<double, 16> &poseTransformationMat
   position = transformation.translation();
 
   //std::cout << "initialize CartesianPose from transformation matrix: \n\ttranslation: " << position.transpose() << std::endl;
-  //std::cout << "\torientation: (qx,qy,qz,qw) = " << orientation.coeffs().transpose() << ", Euler angles: " << orientation.toRotationMatrix().eulerAngles(0, 1, 2).transpose() << std::endl;
+  //std::cout << "\torientation: (qx,qy,qz,qw) = " << orientation.coeffs().transpose() << ", Euler angles: " << orientation.toRotationMatrix().eulerAngles(0,1,2).transpose() << std::endl;
     
 }
 
@@ -60,7 +60,7 @@ Eigen::Vector6d CartesianPose::getVector6d() const
   Eigen::Vector6d result;
 
   // initialize the vector values x,y,z, roll,pitch,yaw
-  result << position, orientation.toRotationMatrix().eulerAngles(0, 1, 2);
+  result << position, orientation.toRotationMatrix().eulerAngles(0,1,2);
   return result;
 }
 
@@ -123,16 +123,6 @@ Eigen::Vector6d CartesianPose::getDifferenceTo(const CartesianPose &rhs) const
   // compute translation
   difference.head<3>() = rhs.position - position;
 
-  // debugging output
-/*#ifndef NDEBUG
-  std::cout << "orientation from (qx,qy,qz,qw)=" << orientation.coeffs().transpose()
-    << ", Euler (deg): " << orientation.toRotationMatrix().eulerAngles(0, 1, 2).transpose() / M_PI * 180. << std::endl 
-    << "           to (qx,qy,qz,qw)=" << rhs.orientation.coeffs().transpose()
-    << ", Euler (deg): " << rhs.orientation.toRotationMatrix().eulerAngles(0, 1, 2).transpose() / M_PI * 180. << " " << std::endl;
-
-  // slerp reference: https://eigen.tuxfamily.org/dox/classEigen_1_1QuaternionBase.html#ac840bde67d22f2deca330561c65d144e
-#endif*/
-
   // Compute the rotation from orientation1 to orientation2.
   // Determine the Euler-angles for (orientation1 to orientation2) and the negative EUler-angles for (orientation2 to orientation1).
   // Use the set of Euler-angles with the smaller norm.
@@ -140,8 +130,8 @@ Eigen::Vector6d CartesianPose::getDifferenceTo(const CartesianPose &rhs) const
   // compute orientation
   Eigen::Quaterniond rotation = rhs.orientation * orientation.inverse();
 
-  Eigen::Vector3d eulerAnglesForward = rotation.toRotationMatrix().eulerAngles(0, 1, 2);
-  Eigen::Vector3d eulerAnglesBackward = -rotation.inverse().toRotationMatrix().eulerAngles(0, 1, 2);
+  Eigen::Vector3d eulerAnglesForward = rotation.toRotationMatrix().eulerAngles(0,1,2);
+  Eigen::Vector3d eulerAnglesBackward = -rotation.inverse().toRotationMatrix().eulerAngles(0,1,2);
 
   // select the euler angles with smaller norm
   difference.tail<3>() = eulerAnglesForward;
@@ -163,7 +153,7 @@ double CartesianPose::getRotationalDistance(const CartesianPose &other) const {
 
 std::ostream &operator<<(std::ostream &stream, const CartesianPose &rhs)
 {
-  stream << "(" << rhs.position[0] << "," << rhs.position[1] << "," << rhs.position[2] << ")  ("
-    << rhs.orientation.toRotationMatrix().eulerAngles(0, 1, 2).transpose() / M_PI * 180. << ") xyzw:" << rhs.orientation.coeffs().transpose();
+  stream << "xyz: (" << rhs.position[0] << "," << rhs.position[1] << "," << rhs.position[2] << ")  ypr: ("
+    << rhs.orientation.toRotationMatrix().eulerAngles(2,1,0).transpose() / M_PI * 180. << ") q xyzw: (" << rhs.orientation.coeffs().transpose() << ")";
   return stream;
 }
