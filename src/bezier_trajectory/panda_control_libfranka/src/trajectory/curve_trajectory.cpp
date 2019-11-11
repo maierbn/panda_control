@@ -3,6 +3,7 @@
 #include <iomanip>
 #include <iostream>
 #include <fstream>
+#include <omp.h>
 
 CurveTrajectory::CurveTrajectory(const CartesianPose initialPose,
   std::function<CartesianPose (double t)> curve, double endTime, double dt) :
@@ -113,12 +114,13 @@ Eigen::Matrix6dynd CurveTrajectory::poseVelocities() const
   std::cout << "    from: " << initialPose_ << std::endl;
   std::cout << "      to: " << endPose << std::endl;
   std::cout << "  dt: " << dt_ << " s, duration: " << endTime_ << " s, " << nSteps << " steps." << std::endl;
-  std::cout << std::endl;
+  std::cout << "Generating poseVelocities, this may take a while ... " << std::flush;
 
   Eigen::Matrix6dynd velocities(6,nSteps);
 
   const double h = 1e-5;   // do not set too small!
 
+  #pragma omp parallel for shared(velocities)
   for (int i = 0; i < nSteps; i++)
   {
     // compute current time
@@ -137,8 +139,10 @@ Eigen::Matrix6dynd CurveTrajectory::poseVelocities() const
 
     //std::cout << "  v: " << velocities.col(i).transpose() << std::endl;
   }
-  return velocities;
 
+  std::cout << " done" << std::endl;
+
+  return velocities;
 }
 
 double CurveTrajectory::dt() const {

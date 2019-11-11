@@ -30,7 +30,7 @@ public:
    * \note the return value will be the same, until step() is called.
    *
    */
-  std::array<double, 16> getCartesianPose() const;
+  std::array<double, 16> getCartesianPose();
 
   /** \brief get current cartesian velocities
    *
@@ -40,7 +40,7 @@ public:
    * \note To iterate over the dataset, call step(). Otherwise, the same value is fetched every
    * time.
    * */
-  std::array<double, 6> getCartesianVelocity() const;
+  std::array<double, 6> getCartesianVelocity();
 
   /** \brief iterate to the next time instance.
    * 
@@ -77,6 +77,9 @@ public:
   franka::CartesianPose operator()(const franka::RobotState &, franka::Duration time_step);
 
 protected:
+  /// the trajectory object that is used for this trajectory iterator
+  const Trajectory &trajectory_;   
+
   /// column-wise storage of precalculated poses for the whole trajectory (end effector in
   /// robot base coordinate system).
   std::vector<CartesianPose> poses_;

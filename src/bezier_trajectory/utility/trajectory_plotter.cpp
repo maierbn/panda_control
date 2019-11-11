@@ -170,6 +170,7 @@ plt.show()
   {
     std::cout << "Could not execute plot script." << std::endl;
   }
+  std::cout << "Continue program." << std::endl;
 }
 
 void TrajectoryPlotter::plot()

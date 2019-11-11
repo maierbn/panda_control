@@ -22,7 +22,7 @@ void setDefaultBehaviour(franka::Robot &robot);
 // global vector of poses, to be used in the curve function
 std::vector<std::array<double,5>> poses;
 
-const double endTime = 15.0;    // duration of the trajectory curve(t), t ∈ [0,endTime]
+const double endTime = 5.0;    // duration of the trajectory curve(t), t ∈ [0,endTime]
 
 /** example curve function used for the trajectory */
 CartesianPose curve(double t)
@@ -134,7 +134,7 @@ int main()
   CartesianPose restingPose;
   //restingPose.position <<  0.384663, -0.380291, 0.204745;  // right, above the wooden bottom plate
     
-
+#if 0
   // create poses in Cartesian pose
   std::vector<CartesianPose> cartesianPoses(poses.size());
 
@@ -168,7 +168,7 @@ int main()
   trajectoryPlotter.plot();
 
   exit(0);
-
+#endif
   std::cout << "connect to robot " << std::endl;
   franka::Robot panda(robot_ip);
 
@@ -192,7 +192,7 @@ int main()
     restingPose.position << 0.0325709,-0.332922,0.220434;       // left, above the wooden bottom plate
     restingPose.position[2] += 0.31067;   // move to start position above bottom
    
-    restingPose.position << -0.0148937,-0.369952,0.602289;    // center, for above plate
+    restingPose.position << -0.0148937,-0.369952,0.602289;    // center, far above plate
 
     restingPose.orientation = CartesianPose::neutralOrientation;
     //restingPose.orientation = Eigen::Quaterniond(0.0, 0.0, 1.0, 0.0); // rotated by 180deg around z axis (such that gripper can rotate ccw)
@@ -200,7 +200,7 @@ int main()
     Eigen::AngleAxisd angle(-M_PI_2, Eigen::Vector3d::UnitZ());
     restingPose.orientation = restingPose.orientation * Eigen::Quaterniond(angle);
 */
-#if 0
+#if 1
     // LinearTrajectory and TrajectoryIteratorCartesianVelocity object creation
     LinearTrajectory linearTrajectory(initialPose, restingPose, 0.2, 0.2, 1.e-3);
     auto motionIterator = std::make_unique<TrajectoryIteratorCartesianVelocity>(linearTrajectory);
@@ -224,7 +224,7 @@ int main()
     // setup poses
     std::vector<CartesianPose> cartesianPoses(poses.size());
 
-    for (int i = 0; i < poses.size(); i++)
+    for (unsigned int i = 0; i < poses.size(); i++)
     {
       // transform from poses array (x,y,z,phi,theta) to Cartesian Pose
       cartesianPoses[i].position[0] = poses[i][0];
@@ -232,7 +232,7 @@ int main()
       cartesianPoses[i].position[2] = poses[i][2];
 
       // transform from centi-meters to meters
-      cartesianPoses[i].position *= 1e-2;
+      //cartesianPoses[i].position *= 1e-2;
 
       // no angle change
       cartesianPoses[i].orientation = CartesianPose::neutralOrientation;
