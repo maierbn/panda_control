@@ -3,31 +3,87 @@
 #include <iostream>
 
 BezierTrajectory::BezierTrajectory(CartesianPose initialPose, std::vector<CartesianPose> &poses, double p, double continuity, double endTime, double dt) :
-   poses_(poses), p_(p), targetMultiplicity_(p - continuity),
-   SmoothCurveTrajectory(initialPose,
+   initialPose_(initialPose), poses_(poses), p_(p), targetMultiplicity_(p - continuity)
+{
+  generateKnotVector();
+
+  smoothCurveTrajectory_ = std::make_shared<SmoothCurveTrajectory>(
+    initialPose_, 
     [initialPose, poses, endTime, this](double time) -> CartesianPose
     {
       double t = time/endTime;
 
       CartesianPose result;
+
+      // linear interpolation
+#if 0
+      double alpha = t;  // run from 0 to 1
+
+      // determine current pose index for the given alpha (time) value
+      const int nPoses = poses.size();
+      int index = int(alpha * nPoses);
+
+      // clamp index to range of poses
+      index = std::min(nPoses-2, std::max(0, index));
+
+      // linearly interpolate between neighbouring poses
+      double lambda = alpha * nPoses - index;
+
+      // interpolate position
+      for (int i = 0; i < 3; i++)
+      {
+        result.position[i] = (1.-lambda) * poses[index].position[i] + lambda * poses[index+1].position[i];
+      }
+
+      // interpolate orientation
+      for (int i = 0; i < 4; i++)
+      {
+        result.orientation.coeffs()[i] = (1.-lambda) * poses[index].orientation.coeffs()[i] + lambda * poses[index+1].orientation.coeffs()[i];
+      }
+      result.orientation.normalize();
+#endif
+      // create bezier curve
+      result.position = Eigen::Vector3d::Zero();
+      result.orientation.coeffs() = Eigen::Vector4d::Zero();
       for (int i = 0; i < this->nBasisFunctions_; i++)
       {
-        result += poses_[i] * basis(i,p_,t);
+        result.position += poses_[i].position * basis(i,p_,t);
+        result.orientation.coeffs() += poses_[i].orientation.coeffs() * basis(i,p_,t);
       }
+      result.orientation.normalize();
 
       return result;
     },
     endTime, dt
-  )
-{
+  );
 }
 
-double BezierTrajectory::basis(int i, int n, double x)
+
+std::vector<CartesianPose> BezierTrajectory::poses() const
 {
-  if (knotVector_.empty())
-  {
-    generateKnotVector();
-  }
+  return smoothCurveTrajectory_->poses();
+}
+
+Eigen::Matrix6dynd BezierTrajectory::poseVelocities() const
+{
+  return smoothCurveTrajectory_->poseVelocities();
+}
+
+/** \brief interface to get sample period dt [s] */
+double BezierTrajectory::dt() const
+{
+  return smoothCurveTrajectory_->dt();
+}
+
+/** \brief interface to get calculated end time [s] */
+double BezierTrajectory::endTime() const
+{
+  return smoothCurveTrajectory_->endTime();
+}
+
+double BezierTrajectory::basis(int i, int n, double x) const
+{
+  assert(!knotVector_.empty());
 
   // left end of domain
   if (n == p_ && i == 0 && x < knotVector_[0])
@@ -36,7 +92,7 @@ double BezierTrajectory::basis(int i, int n, double x)
   }
     
   // right end
-  if (n == p_ && i == poses_.size()-1 && x >= knotVector_.back())
+  if (n == p_ && i == (int)poses_.size()-1 && x >= knotVector_.back())
   {
     return 1;
   }
@@ -97,7 +153,7 @@ void BezierTrajectory::generateKnotVector()
   for (int i = 0; i < p_+1; i++)
   {
     knotVector_[i] = 0;
-    knotVector_[k-p_-1 + i] = 0;
+    knotVector_[k-p_-1 + i] = 1;
   }
 
   // Knots with multiplicity of targetMultiplicity_
@@ -120,7 +176,7 @@ void BezierTrajectory::generateKnotVector()
 
   std::cout << "p: " << p_ << ", multiplicity: " << targetMultiplicity_ << ", nBasisFunctions: " << nBasisFunctions << std::endl;
   std::cout << "Knotvector: ";
-  for (int i = 0; i < knotVector_.size(); i++)
+  for (int i = 0; i < (int)knotVector_.size(); i++)
   {
     if (i != 0)
       std::cout << ", ";

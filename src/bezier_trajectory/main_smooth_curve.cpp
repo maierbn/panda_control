@@ -2,6 +2,7 @@
 #include "trajectory/linear_trajectory.h"
 #include "trajectory/curve_trajectory.h"
 #include "trajectory/smooth_curve_trajectory.h"
+#include "trajectory/bezier_trajectory.h"
 #include "utility/trajectory_plotter.h"
 
 #include <franka/exception.h>
@@ -65,7 +66,7 @@ CartesianPose curve(double t)
 //std::cout << "inedx: " << index << ", a: " << a << ", index: " << index << ", currentPose: " << result.position;
 
   // transform from centi-meters to meters
-  result.position *= 1e-2;
+  //result.position *= 1e-2;
 
   // no angle change
   result.orientation = CartesianPose::neutralOrientation;
@@ -113,8 +114,12 @@ int main()
     std::string valueString;
     for (int entryNo = 0; std::getline(lineStream, valueString, ','); entryNo++)
     {
+      // only use every 10th pose
+      //if ((entryNo % 10) != 0)
+      //  continue;
+
       // allocate memory if necessary
-      if (entryNo >= poses.size())
+      if (entryNo >= (int)poses.size())
       {
         poses.resize(entryNo+1);
       }
@@ -124,14 +129,37 @@ int main()
     }
   }
 
+  std::cout << "Parsed " << poses.size() << " poses from file \"" << filename << "\". " << std::endl;
+
   CartesianPose restingPose;
   //restingPose.position <<  0.384663, -0.380291, 0.204745;  // right, above the wooden bottom plate
     
 
-  typedef CurveTrajectory TrajectoryType;
+  // create poses in Cartesian pose
+  std::vector<CartesianPose> cartesianPoses(poses.size());
 
+  for (unsigned int i = 0; i < poses.size(); i++)
+  {
+    cartesianPoses[i].position[0] = poses[i][0];
+    cartesianPoses[i].position[1] = poses[i][1];
+    cartesianPoses[i].position[2] = poses[i][2];
+      
+    double theta = poses[i][3];
+    double phi = poses[i][4];
+      
+    Eigen::AngleAxisd angle0(phi, Eigen::Vector3d::UnitZ());
+    Eigen::AngleAxisd angle1(M_PI/2. - theta, Eigen::Vector3d::UnitY());
+
+    cartesianPoses[i].orientation = Eigen::Quaterniond(angle1) * Eigen::Quaterniond(angle0) * CartesianPose::neutralOrientation;
+  }
+
+
+  typedef BezierTrajectory TrajectoryType;
+
+  const double p = 4;
+  const double continuity = 3;
   const double samplingTimestepWidth = 1e-3;
-  TrajectoryType curveTrajectory(restingPose, curve, endTime, samplingTimestepWidth);
+  TrajectoryType curveTrajectory(restingPose, cartesianPoses, p, continuity, endTime, samplingTimestepWidth);
 
   std::cout << "curve starts at " << curve(0) << std::endl;
   std::cout << "start trajectoryPlotter" << std::endl;
@@ -139,6 +167,8 @@ int main()
   TrajectoryPlotter trajectoryPlotter(restingPose, std::make_shared<TrajectoryType>(curveTrajectory), samplingTimestepWidth);
   trajectoryPlotter.plot();
 
+
+  exit(0);
 
   std::cout << "connect to robot " << std::endl;
   franka::Robot panda(robot_ip);
