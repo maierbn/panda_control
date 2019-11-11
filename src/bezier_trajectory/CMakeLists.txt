@@ -18,6 +18,13 @@ add_executable(${PROJECT_NAME}
 target_link_libraries(${PROJECT_NAME} trajectory_planner Franka::Franka)
 target_include_directories(${PROJECT_NAME} PUBLIC trajectory)
 
+option(PROFILE "Add flags to profile the program with gprof." OFF)
+if(PROFILE)
+  SET(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -pg -g")
+  SET(CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS} -pg -g")
+endif()
+
+
 # -------------------------
 project(peg_in_hole)
 add_executable(${PROJECT_NAME}

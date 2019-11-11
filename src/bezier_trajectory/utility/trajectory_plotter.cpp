@@ -107,7 +107,7 @@ path_y_list = []
 path_z_list = []
 
 # loop over poses with given stride
-stride = 10
+stride = 100
 n_poses = len(poses)
 for i in range(0,n_poses,stride):
 
@@ -121,7 +121,7 @@ for i in range(0,n_poses,stride):
   path_z_list.append(z)
 
   # define small line that visualizes orientation
-  size = 0.02*1e-2
+  size = 0.02
   x_list = [x, x + size*np.sin(np.pi/2.-pitch)*np.cos(yaw)]
   y_list = [y, y + size*np.sin(np.pi/2.-pitch)*np.sin(yaw)]
   z_list = [z, z + size*np.cos(np.pi/2.-pitch)]
