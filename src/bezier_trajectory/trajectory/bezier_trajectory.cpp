@@ -56,6 +56,9 @@ BezierTrajectory::BezierTrajectory(CartesianPose initialPose, std::vector<Cartes
     },
     endTime, dt
   );
+
+  // initialize poseVelocities
+  smoothCurveTrajectory_->poseVelocities();
 }
 
 

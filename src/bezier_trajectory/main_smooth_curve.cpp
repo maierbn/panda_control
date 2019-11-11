@@ -192,7 +192,7 @@ int main()
     restingPose.position << 0.0325709,-0.332922,0.220434;       // left, above the wooden bottom plate
     restingPose.position[2] += 0.31067;   // move to start position above bottom
    
-    restingPose.position << -0.0148937,-0.369952,0.602289;    // center, far above plate
+    restingPose.position << -0.0201281,-0.383884,0.597121;    // center, far above plate
 
     restingPose.orientation = CartesianPose::neutralOrientation;
     //restingPose.orientation = Eigen::Quaterniond(0.0, 0.0, 1.0, 0.0); // rotated by 180deg around z axis (such that gripper can rotate ccw)
@@ -250,8 +250,8 @@ int main()
     int continuity = 2;
     BezierTrajectory curveTrajectory(restingPose, cartesianPoses, p, continuity, endTime, samplingTimestepWidth);
 
-    TrajectoryPlotter trajectoryPlotter(restingPose, std::make_shared<BezierTrajectory>(curveTrajectory), samplingTimestepWidth);
-    trajectoryPlotter.plot();
+    //TrajectoryPlotter trajectoryPlotter(restingPose, std::make_shared<BezierTrajectory>(curveTrajectory), samplingTimestepWidth);
+    //trajectoryPlotter.plot();
 
     // move along trajectory 
     auto curveMotionIterator = std::make_unique<TrajectoryIteratorCartesianVelocity>(curveTrajectory);
