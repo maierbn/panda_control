@@ -21,8 +21,9 @@ TrajectoryPlotter::TrajectoryPlotter(CartesianPose startPose, std::shared_ptr<Tr
 )";
 
   std::vector<CartesianPose> poses;
+  std::vector<double> knots;
   pythonScript << plotPoseVelocities(poseVelocities, samplingTimestepWidth);
-  pythonScript << plotTrajectory(startPose, poseVelocities, samplingTimestepWidth, poses);
+  pythonScript << plotTrajectory(startPose, poseVelocities, samplingTimestepWidth, poses, knots);
 
   pythonScript << R"(
 
@@ -69,8 +70,58 @@ TrajectoryPlotter::TrajectoryPlotter(CartesianPose startPose, std::shared_ptr<Tr
 # -*- coding: UTF-8 -*-
 )";
 
+  std::vector<double> knots;
+
   pythonScript << plotPoseVelocities(poseVelocities, samplingTimestepWidth);
-  pythonScript << plotTrajectory(startPose, poseVelocities, samplingTimestepWidth, poses);
+  pythonScript << plotTrajectory(startPose, poseVelocities, samplingTimestepWidth, poses, knots);
+
+  pythonScript << R"(
+
+# show plot window
+plt.show()
+)";
+
+  std::string filename = "plot.py";
+
+  // write resulting python script to file
+  std::ofstream file(filename);
+  if (!file.is_open())
+  {
+    std::cout << "Could not write to file \"" << filename << "\"." << std::endl;
+    return;
+  }
+
+  file << pythonScript.str();
+  file.close();
+
+  std::cout << "wrote file \"" << filename << "\"" << std::endl;
+
+  // execute plot script
+  std::cout << "Plotting trajectory, close plot window to continue." << std::endl;
+  int returnValue = system("chmod +x ./plot.py; ./plot.py");
+
+  if (returnValue != 0)
+  {
+    std::cout << "Could not execute plot script." << std::endl;
+  }
+  std::cout << "Continue program." << std::endl;
+
+}
+
+TrajectoryPlotter::TrajectoryPlotter(CartesianPose startPose, std::shared_ptr<Trajectory> trajectory,
+                    const std::vector<CartesianPose> &poses, const std::vector<double> &knots, double samplingTimestepWidth)
+{
+  std::cout << "get poseVelocities" << std::endl;
+  // compute poses from poseVelocities to immitate trajectory_iterator_cartesian_velocity
+  Eigen::Matrix6dynd poseVelocities = trajectory->poseVelocities();
+
+  std::stringstream pythonScript;
+  pythonScript << R"(#!/usr/bin/python
+# -*- coding: UTF-8 -*-
+)";
+
+  pythonScript << plotPoseVelocities(poseVelocities, samplingTimestepWidth);
+  pythonScript << plotTrajectory(startPose, poseVelocities, samplingTimestepWidth, poses, knots);
 
   pythonScript << R"(
 
@@ -106,7 +157,7 @@ plt.show()
 }
 
 std::string TrajectoryPlotter::plotTrajectory(CartesianPose startPose, const Eigen::Matrix6dynd &poseVelocities,
-                                              double dt, const std::vector<CartesianPose> &poses)
+                                              double dt, const std::vector<CartesianPose> &poses, const std::vector<double> &knots)
 {
   // start python script text
   std::stringstream pythonScript;
@@ -277,7 +328,52 @@ ax.set_title("n poses in path: {}, stride for this plot: {}".format(n_path_poses
 ax.legend(loc="lower left")
 plt.savefig('trajectory.pdf')
 
+)";
+
+if (!knots.empty())
+{
+  pythonScript << R"(
+
+dt = )" << dt << R"(
+
+knot_list = [)";
+
+for (int i = 0; i < knots.size(); i++)
+{
+  pythonScript << knots[i] << ",";
+}
+pythonScript << "]\n";
+
+pythonScript << R"(
+
+# create 2x3 subplots
+fig, axes = plt.subplots(3,2)
+
+if False:
+  xlist = [i*dt for i in range(len(path_poses))]
+  axes[0,0].plot(xlist, [x for [x,y,z,phi,theta] in path_poses], label="x")
+  axes[0,0].plot(knot_list, [x for [x,y,z,phi,theta] in extra_poses], "ro")
+  axes[0,0].set_title("x")
+
+  axes[0,1].plot(xlist, [y for [x,y,z,phi,theta] in path_poses], label="y")
+  axes[0,1].set_title("y")
+
+  axes[0,2].plot(xlist, [z for [x,y,z,phi,theta] in path_poses], label="z")
+  axes[0,2].set_title("z")
+
+  axes[1,0].plot(xlist, [phi for [x,y,z,phi,theta] in path_poses], label="phi")
+  axes[1,0].set_title("phi")
+
+  axes[1,1].plot(xlist, [theta for [x,y,z,phi,theta] in path_poses], label="theta")
+  axes[1,1].set_title("theta")
+
+
+
+
+plt.savefig('trajectory_components.pdf')
+
   )";
+}
   return pythonScript.str();
 }
 

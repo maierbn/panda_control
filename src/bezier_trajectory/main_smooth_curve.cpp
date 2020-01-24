@@ -279,7 +279,12 @@ int main()
     // multiplicity = p - continuity
     BezierTrajectory curveTrajectory(restingPose, cartesianPoses, p, continuity, endTime, samplingTimestepWidth);
 
-    TrajectoryPlotter trajectoryPlotter(restingPose, std::make_shared<BezierTrajectory>(curveTrajectory), cartesianPoses, samplingTimestepWidth);
+    std::vector<double> knots;
+    curveTrajectory.getKnots(knots);
+
+    TrajectoryPlotter trajectoryPlotter(restingPose, std::make_shared<BezierTrajectory>(curveTrajectory), cartesianPoses, knots, samplingTimestepWidth);
+
+
     // move along trajectory 
     auto curveMotionIterator = std::make_unique<TrajectoryIteratorCartesianVelocity>(curveTrajectory);
     

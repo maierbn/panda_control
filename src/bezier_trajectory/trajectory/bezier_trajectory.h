@@ -27,6 +27,9 @@ public:
   /** \brief interface to get calculated end time [s] */
   double endTime() const;
 
+  //! return all distinct knot values
+  void getKnots(std::vector<double> &knots) const;
+
 private:
 
 	std::shared_ptr<SmoothCurveTrajectory> smoothCurveTrajectory_;  //< the smooth curve trajectory

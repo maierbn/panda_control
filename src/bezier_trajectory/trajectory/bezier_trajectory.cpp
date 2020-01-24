@@ -187,3 +187,16 @@ void BezierTrajectory::generateKnotVector()
   }
   std::cout << std::endl;
 }
+
+void BezierTrajectory::getKnots(std::vector<double> &knots) const
+{
+  double previousKnot = -1;
+  for (int i = 0; i < knotVector_.size(); i++)
+  {
+    if (fabs(knotVector_[i] - previousKnot) > 1e-8)
+    {
+      previousKnot = knotVector_[i];
+      knots.push_back(knotVector_[i]);
+    }
+  }
+}
