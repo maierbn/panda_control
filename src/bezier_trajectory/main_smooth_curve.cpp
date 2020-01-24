@@ -15,7 +15,7 @@
 
 #include <iostream>
 
-#define NO_ROBOT
+//#define NO_ROBOT
 
 const std::string robot_ip = "172.16.0.2";
 
@@ -24,7 +24,7 @@ void setDefaultBehaviour(franka::Robot &robot);
 // global vector of poses, to be used in the curve function
 std::vector<std::array<double,5>> poses;
 
-const double endTime = 5.0;    // duration of the trajectory curve(t), t ∈ [0,endTime]
+const double endTime = 10.0;    // duration of the trajectory curve(t), t ∈ [0,endTime]
 
 /** example curve function used for the trajectory */
 CartesianPose curve(double t)
@@ -146,7 +146,6 @@ int main()
 
   poses.assign(newPoses.begin(), newPoses.end());
 
-  CartesianPose restingPose;
   //restingPose.position <<  0.384663, -0.380291, 0.204745;  // right, above the wooden bottom plate
     
 #if 0
@@ -185,63 +184,61 @@ int main()
   exit(0);
 #endif
 
-#ifndef NO_ROBOT
-
-  std::cout << "connect to robot " << std::endl;
-  franka::Robot panda(robot_ip);
-#else
-
-  std::cout << "compiled with NO_ROBOT " << std::endl;
-#endif
-
   try
   {
 
-#ifndef NO_ROBOT
-    // connect to robot
-    setDefaultBehaviour(panda);
-
-    // read current robot state
-    franka::RobotState initialState = panda.readOnce();
-    CartesianPose initialPose(initialState.O_T_EE);
-    std::cout << "current pose: " << initialPose << std::endl;
-    
-#endif
-    // calculate resting pose
     CartesianPose restingPose;
-    //restingPose.position <<  0.317125, -0.38625, 0.367743;  // in the air
-    restingPose.position <<  0.384663, -0.380291, 0.204745;  // right, above the wooden bottom plate
-    restingPose.position <<  -0.0560702, -0.322303, 0.201182;  // center, above the wooden bottom plate
-    restingPose.position <<  -0.0560702, -0.402303, 0.201182;  // center, above the wooden bottom plate
-    //restingPose.position << -0.503348,-0.40,0.201182;       // left, above the wooden bottom plate
-    restingPose.position << 0.0325709,-0.332922,0.220434;       // left, above the wooden bottom plate
-    restingPose.position[2] += 0.31067;   // move to start position above bottom
-   
-    restingPose.position << -0.0201281,-0.383884,0.597121;    // center, far above plate
-
-    restingPose.orientation = CartesianPose::neutralOrientation;
-    //restingPose.orientation = Eigen::Quaterniond(0.0, 0.0, 1.0, 0.0); // rotated by 180deg around z axis (such that gripper can rotate ccw)
-    /* 
-    Eigen::AngleAxisd angle(-M_PI_2, Eigen::Vector3d::UnitZ());
-    restingPose.orientation = restingPose.orientation * Eigen::Quaterniond(angle);
-*/
+    {
 #ifndef NO_ROBOT
-    // LinearTrajectory and TrajectoryIteratorCartesianVelocity object creation
-    LinearTrajectory linearTrajectory(initialPose, restingPose, 0.2, 0.2, 1.e-3);
-    auto motionIterator = std::make_unique<TrajectoryIteratorCartesianVelocity>(linearTrajectory);
-    
-    // move to resting pose
-    std::cout << " \aRobot will move to resting pose, press Enter.";
-    std::cin.get();
-    panda.control(*motionIterator, /*controller_mode = */ franka::ControllerMode::kCartesianImpedance);
+      std::cout << "connect to robot " << std::endl;
+      franka::Robot panda(robot_ip);
 
-    // read current pose for debugging
-    franka::RobotState currentState = panda.readOnce();
-    CartesianPose currentPose(currentState.O_T_EE);
+      // connect to robot
+      setDefaultBehaviour(panda);
 
-    std::cout << "current pose: " << currentPose << std::endl << std::endl;
+      // read current robot state
+      franka::RobotState initialState = panda.readOnce();
+      CartesianPose initialPose(initialState.O_T_EE);
+      std::cout << "current pose: " << initialPose << std::endl;
+      
+#else
+      std::cout << "compiled with NO_ROBOT " << std::endl;
 #endif
+      // calculate resting pose
+      //restingPose.position <<  0.317125, -0.38625, 0.367743;  // in the air
+      restingPose.position <<  0.384663, -0.380291, 0.204745;  // right, above the wooden bottom plate
+      restingPose.position <<  -0.0560702, -0.322303, 0.201182;  // center, above the wooden bottom plate
+      restingPose.position <<  -0.0560702, -0.402303, 0.201182;  // center, above the wooden bottom plate
+      //restingPose.position << -0.503348,-0.40,0.201182;       // left, above the wooden bottom plate
+      restingPose.position << 0.0325709,-0.332922,0.220434;       // left, above the wooden bottom plate
+      restingPose.position[2] += 0.40;   // move to start position above bottom
+    
+      
+      restingPose.position << -0.0201281,-0.383884,0.597121;    // center, far above plate
 
+      restingPose.orientation = CartesianPose::neutralOrientation;
+      //restingPose.orientation = Eigen::Quaterniond(0.0, 0.0, 1.0, 0.0); // rotated by 180deg around z axis (such that gripper can rotate ccw)
+      /* 
+      Eigen::AngleAxisd angle(-M_PI_2, Eigen::Vector3d::UnitZ());
+      restingPose.orientation = restingPose.orientation * Eigen::Quaterniond(angle);
+*/
+  #ifndef NO_ROBOT
+      // LinearTrajectory and TrajectoryIteratorCartesianVelocity object creation
+      LinearTrajectory linearTrajectory(initialPose, restingPose, 0.2, 0.2, 1.e-3);
+      auto motionIterator = std::make_unique<TrajectoryIteratorCartesianVelocity>(linearTrajectory);
+      
+      // move to resting pose
+      std::cout << " \aRobot will move to resting pose, press Enter.";
+      std::cin.get();
+      panda.control(*motionIterator, /*controller_mode = */ franka::ControllerMode::kCartesianImpedance);
+
+      // read current pose for debugging
+      franka::RobotState currentState = panda.readOnce();
+      CartesianPose currentPose(currentState.O_T_EE);
+
+      std::cout << "current pose: " << currentPose << std::endl << std::endl;
+  #endif
+    }
     // define trajectory from resting pose along curve
 
 #ifdef NO_ROBOT
@@ -249,7 +246,7 @@ int main()
 #else
     const double samplingTimestepWidth = 1e-3;
 #endif
-    //SmoothCurveTrajectory curveTrajectory(restingPose, curve, endTime, samplingTimestepWidth);
+    std::cout << "samplingTimestepWidth: " << samplingTimestepWidth << std::endl;
 
     // define Bezier trajectory
     // setup poses
@@ -277,17 +274,12 @@ int main()
       cartesianPoses[i].orientation = Eigen::Quaterniond(angle1) * Eigen::Quaterniond(angle0) * CartesianPose::neutralOrientation;
     }
 
-    std::cout << "samplingTimestepWidth: " << samplingTimestepWidth << std::endl;
-
-    int p = 7;
-    int continuity = 6;
+    int p = 5;
+    int continuity = 3;
     // multiplicity = p - continuity
     BezierTrajectory curveTrajectory(restingPose, cartesianPoses, p, continuity, endTime, samplingTimestepWidth);
 
     TrajectoryPlotter trajectoryPlotter(restingPose, std::make_shared<BezierTrajectory>(curveTrajectory), cartesianPoses, samplingTimestepWidth);
-
-    exit(0);
-
     // move along trajectory 
     auto curveMotionIterator = std::make_unique<TrajectoryIteratorCartesianVelocity>(curveTrajectory);
     
@@ -296,7 +288,9 @@ int main()
     std::cin.ignore();
 
 #ifndef NO_ROBOT
-    panda.control(*curveMotionIterator,
+    franka::Robot panda2(robot_ip);
+
+    panda2.control(*curveMotionIterator,
                   /*controller_mode = */ franka::ControllerMode::kCartesianImpedance);
 #endif
 
@@ -318,7 +312,7 @@ int main()
   }
 
 #ifndef NO_ROBOT
-  panda.automaticErrorRecovery();
+  //panda.automaticErrorRecovery();
 #endif
 
   std::cout << "Motion finished regularly." << std::endl;

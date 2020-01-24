@@ -29,7 +29,7 @@ public:
    *
    * \arg[in] traj The trajectory object, describing the cartesian toolpath.
    */
-  TrajectoryIteratorCartesianVelocity(const Trajectory &traj) : TrajectoryIteratorCartesian(traj) {}
+  TrajectoryIteratorCartesianVelocity(Trajectory &traj) : TrajectoryIteratorCartesian(traj) {}
 
   /** \brief function call interface `(const franka::RobotState&, franka::Duration) ->
    * franka::CartesianVelocities`, which can be directly used as velocities trajectory in

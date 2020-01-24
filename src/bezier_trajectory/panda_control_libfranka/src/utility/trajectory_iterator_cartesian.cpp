@@ -3,7 +3,7 @@
 #include <iostream>
 #include "utility/kbhit.h"
 
-TrajectoryIteratorCartesian::TrajectoryIteratorCartesian(const Trajectory &trajectory)
+TrajectoryIteratorCartesian::TrajectoryIteratorCartesian(Trajectory &trajectory)
     : trajectory_(trajectory), poseVelocities_(trajectory_.poseVelocities()), dt_(trajectory.dt()), endTime_(trajectory.endTime()), currentIndex_(0), currentTime_(0.0)
 {
 

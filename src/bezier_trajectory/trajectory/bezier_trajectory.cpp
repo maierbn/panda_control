@@ -67,7 +67,7 @@ std::vector<CartesianPose> BezierTrajectory::poses() const
   return smoothCurveTrajectory_->poses();
 }
 
-Eigen::Matrix6dynd BezierTrajectory::poseVelocities() const
+Eigen::Matrix6dynd BezierTrajectory::poseVelocities()
 {
   return smoothCurveTrajectory_->poseVelocities();
 }

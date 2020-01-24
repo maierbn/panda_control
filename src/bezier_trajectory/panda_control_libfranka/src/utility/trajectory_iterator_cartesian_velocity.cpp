@@ -8,7 +8,7 @@ operator()(const franka::RobotState &, franka::Duration time_step)
 {
   franka::CartesianVelocities cartesianVelDes = franka::CartesianVelocities(getCartesianVelocity());
   
-  step();
+  //step();
   // TODO (Hinze, Maier): += time_step.toSec() führt nach x Iterationen zu Rundundgsfehlern und damit zu Sprüngen.
   //                      Wie könnten wir das sonst lösen? 
   currentTime_ += time_step.toSec();

@@ -101,8 +101,13 @@ std::vector<CartesianPose> CurveTrajectory::poses() const {
   return poses;
 }
 
-Eigen::Matrix6dynd CurveTrajectory::poseVelocities() const
+Eigen::Matrix6dynd CurveTrajectory::poseVelocities()
 {
+  if (velocities_.cols() > 0)
+  {
+    return velocities_;
+  }
+
   Eigen::Vector6d velocity;
 
   int nSteps = int(round(endTime_ / dt_));
@@ -116,11 +121,11 @@ Eigen::Matrix6dynd CurveTrajectory::poseVelocities() const
   std::cout << "  dt: " << dt_ << " s, duration: " << endTime_ << " s, " << nSteps << " steps." << std::endl;
   std::cout << "Generating poseVelocities, this may take a while ... " << std::flush;
 
-  Eigen::Matrix6dynd velocities(6,nSteps);
+  velocities_.resize(6,nSteps);
 
   const double h = 1e-5;   // do not set too small!
 
-  #pragma omp parallel for shared(velocities)
+  #pragma omp parallel for shared(velocities_) schedule(guided)
   for (int i = 0; i < nSteps; i++)
   {
     // compute current time
@@ -135,14 +140,14 @@ Eigen::Matrix6dynd CurveTrajectory::poseVelocities() const
     // compute translational and rotational velocity
     Eigen::Vector6d velocity = curve0.getDifferenceTo(curve1) / (2*h);
 
-    velocities.col(i) = velocity;
+    velocities_.col(i) = velocity;
 
     //std::cout << "  v: " << velocities.col(i).transpose() << std::endl;
   }
 
   std::cout << " done" << std::endl;
 
-  return velocities;
+  return velocities_;
 }
 
 double CurveTrajectory::dt() const {

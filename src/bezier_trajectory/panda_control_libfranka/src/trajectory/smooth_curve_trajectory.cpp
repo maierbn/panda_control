@@ -18,7 +18,7 @@ std::vector<CartesianPose> SmoothCurveTrajectory::poses() const
 
 /** \brief get the pose velocity values column-wise for the whole trajectory (end effector in
   * robot base), sampled with dt. */
-Eigen::Matrix6dynd SmoothCurveTrajectory::poseVelocities() const
+Eigen::Matrix6dynd SmoothCurveTrajectory::poseVelocities()
 {
   return curveTrajectory_.poseVelocities();
 }

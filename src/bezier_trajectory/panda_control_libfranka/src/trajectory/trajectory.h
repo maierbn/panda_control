@@ -21,7 +21,7 @@ public:
 
   /** \brief interface to get the pose velocity values column-wise for the whole trajectory, sampled
    * with dt, orientations as Euler angles */
-  virtual Eigen::Matrix6dynd poseVelocities() const = 0;
+  virtual Eigen::Matrix6dynd poseVelocities() = 0;
 
   /** \brief interface to get sample period dt [s] */
   virtual double dt() const = 0;

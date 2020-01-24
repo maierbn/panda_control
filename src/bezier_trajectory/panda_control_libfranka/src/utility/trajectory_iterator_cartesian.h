@@ -21,7 +21,7 @@
 class TrajectoryIteratorCartesian { 
 
 public:
-  TrajectoryIteratorCartesian(const Trajectory &traj);
+  TrajectoryIteratorCartesian(Trajectory &traj);
 
   /** \brief get current cartesian pose (x,y,z, R,P,Y).
    *
@@ -78,7 +78,7 @@ public:
 
 protected:
   /// the trajectory object that is used for this trajectory iterator
-  const Trajectory &trajectory_;   
+  Trajectory &trajectory_;   
 
   /// column-wise storage of precalculated poses for the whole trajectory (end effector in
   /// robot base coordinate system).

@@ -64,7 +64,7 @@ std::vector<CartesianPose> LinearTrajectory::poses() const
   return poses;
 }
 
-Eigen::Matrix6dynd LinearTrajectory::poseVelocities() const
+Eigen::Matrix6dynd LinearTrajectory::poseVelocities()
 {
   // get smooth motion profile for dt
   Eigen::VectorXd motionProfileDerivatives = SmoothMotionProfile::ds_dt(vMax_, aMax_, length_, dt_);

@@ -35,7 +35,7 @@ public:
 
   /** \brief get the pose velocity values column-wise for the whole trajectory (end effector in
    * robot base), sampled with dt. */
-  Eigen::Matrix6dynd poseVelocities() const override;
+  Eigen::Matrix6dynd poseVelocities() override;
 
   /** \brief get sample period dt [s] */
   double dt() const override;
@@ -48,6 +48,7 @@ protected:
   double dt_;  // timstep width or sampling width of the trajectory
   CartesianPose initialPose_;  // initial pose from where to start trajectory
   CartesianPose curveStartPose_;   // initial point of the curve
+  Eigen::Matrix6dynd velocities_;   //< the velocities or nullptr if not yet computed
 
   std::function<CartesianPose (double t)> curve_;   // curve that describes the trajectory
 };

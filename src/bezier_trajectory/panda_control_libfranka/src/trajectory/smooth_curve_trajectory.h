@@ -36,7 +36,7 @@ public:
 
   /** \brief get the pose velocity values column-wise for the whole trajectory (end effector in
    * robot base), sampled with dt. */
-  Eigen::Matrix6dynd poseVelocities() const override;
+  Eigen::Matrix6dynd poseVelocities() override;
 
   /** \brief get sample period dt [s] */
   double dt() const override;
