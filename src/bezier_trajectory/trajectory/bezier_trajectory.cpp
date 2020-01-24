@@ -41,7 +41,7 @@ BezierTrajectory::BezierTrajectory(CartesianPose initialPose, std::vector<Cartes
         result.orientation.coeffs()[i] = (1.-lambda) * poses[index].orientation.coeffs()[i] + lambda * poses[index+1].orientation.coeffs()[i];
       }
       result.orientation.normalize();
-#endif
+#else
       // create bezier curve
       result.position = Eigen::Vector3d::Zero();
       result.orientation.coeffs() = Eigen::Vector4d::Zero();
@@ -51,14 +51,14 @@ BezierTrajectory::BezierTrajectory(CartesianPose initialPose, std::vector<Cartes
         result.orientation.coeffs() += poses_[i].orientation.coeffs() * basis(i,p_,t);
       }
       result.orientation.normalize();
-
+#endif
       return result;
     },
     endTime, dt
   );
 
   // initialize poseVelocities
-  smoothCurveTrajectory_->poseVelocities();
+  //smoothCurveTrajectory_->poseVelocities();
 }
 
 

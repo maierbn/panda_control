@@ -4,18 +4,18 @@
 #include "utility/kbhit.h"
 
 franka::CartesianVelocities TrajectoryIteratorCartesianVelocity::
-operator()(const franka::RobotState &, franka::Duration /*time_step*/)
+operator()(const franka::RobotState &, franka::Duration time_step)
 {
   franka::CartesianVelocities cartesianVelDes = franka::CartesianVelocities(getCartesianVelocity());
   
   step();
   // TODO (Hinze, Maier): += time_step.toSec() führt nach x Iterationen zu Rundundgsfehlern und damit zu Sprüngen.
   //                      Wie könnten wir das sonst lösen? 
-  // currentTime_ += time_step.toSec();
+  currentTime_ += time_step.toSec();
 
-  // int i = 0;
-  // for (; currentTime_ >= (this->currentIndex_+1) * this->dt_; i++)
-  //   this->currentIndex_++;
+  int i = 0;
+  for (; currentTime_ >= (this->currentIndex_+1) * this->dt_; i++)
+    this->currentIndex_++;
 
   // only do expensive checks after 100 iterations
   if (this->currentIndex_ % 100 == 0)
@@ -28,8 +28,8 @@ operator()(const franka::RobotState &, franka::Duration /*time_step*/)
     }
 
     // check if proceeded further than one sample
-    // if (i > 1)
-    //   std::cout << "Warning: Sampling width is too small, jumping to " << i << "th sample!" << std::endl;
+    if (i > 1)
+      std::cout << "Warning: Sampling width is too small, jumping to " << i << "th sample!" << std::endl;
   }
 
   if (currentTime() < getEndTime()) {

@@ -250,8 +250,8 @@ int main()
     int continuity = 2;
     BezierTrajectory curveTrajectory(restingPose, cartesianPoses, p, continuity, endTime, samplingTimestepWidth);
 
-    //TrajectoryPlotter trajectoryPlotter(restingPose, std::make_shared<BezierTrajectory>(curveTrajectory), samplingTimestepWidth);
-    //trajectoryPlotter.plot();
+    TrajectoryPlotter trajectoryPlotter(restingPose, std::make_shared<BezierTrajectory>(curveTrajectory), samplingTimestepWidth);
+    trajectoryPlotter.plot();
 
     // move along trajectory 
     auto curveMotionIterator = std::make_unique<TrajectoryIteratorCartesianVelocity>(curveTrajectory);

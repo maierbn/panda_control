@@ -4,7 +4,7 @@
 #include "utility/kbhit.h"
 
 TrajectoryIteratorCartesian::TrajectoryIteratorCartesian(const Trajectory &trajectory)
-    : trajectory_(trajectory), dt_(trajectory.dt()), endTime_(trajectory.endTime()), currentIndex_(0), currentTime_(0.0)
+    : trajectory_(trajectory), poseVelocities_(trajectory_.poseVelocities()), dt_(trajectory.dt()), endTime_(trajectory.endTime()), currentIndex_(0), currentTime_(0.0)
 {
 
 }
@@ -21,11 +21,11 @@ std::array<double, 16> TrajectoryIteratorCartesian::getCartesianPose()
 
 std::array<double,6> TrajectoryIteratorCartesian::getCartesianVelocity()
 {
-  // if poses have not yet been retrived, get them now
+  /*// if poses have not yet been retrived, get them now
   if (this->poseVelocities_.cols() == 0)
   {
     poseVelocities_ = trajectory_.poseVelocities();
-  }
+  }*/
   const Eigen::Vector6d currentVelocity = this->poseVelocities_.col(this->currentIndex_);
 
   std::array<double,6> result;
