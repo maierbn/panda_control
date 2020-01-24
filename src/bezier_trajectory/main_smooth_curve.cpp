@@ -15,6 +15,8 @@
 
 #include <iostream>
 
+#define NO_ROBOT
+
 const std::string robot_ip = "172.16.0.2";
 
 void setDefaultBehaviour(franka::Robot &robot);
@@ -131,6 +133,19 @@ int main()
 
   std::cout << "Parsed " << poses.size() << " poses from file \"" << filename << "\". " << std::endl;
 
+  // remove some poses
+  const int stride = 5;
+  std::vector<std::array<double,5>> newPoses;
+  for (unsigned int i = 0; i < poses.size(); i++)
+  {
+    if (i % stride == 0)
+    {
+      newPoses.push_back(poses[i]);
+    }
+  }
+
+  poses.assign(newPoses.begin(), newPoses.end());
+
   CartesianPose restingPose;
   //restingPose.position <<  0.384663, -0.380291, 0.204745;  // right, above the wooden bottom plate
     
@@ -169,11 +184,20 @@ int main()
 
   exit(0);
 #endif
+
+#ifndef NO_ROBOT
+
   std::cout << "connect to robot " << std::endl;
   franka::Robot panda(robot_ip);
+#else
+
+  std::cout << "compiled with NO_ROBOT " << std::endl;
+#endif
 
   try
   {
+
+#ifndef NO_ROBOT
     // connect to robot
     setDefaultBehaviour(panda);
 
@@ -182,6 +206,7 @@ int main()
     CartesianPose initialPose(initialState.O_T_EE);
     std::cout << "current pose: " << initialPose << std::endl;
     
+#endif
     // calculate resting pose
     CartesianPose restingPose;
     //restingPose.position <<  0.317125, -0.38625, 0.367743;  // in the air
@@ -200,7 +225,7 @@ int main()
     Eigen::AngleAxisd angle(-M_PI_2, Eigen::Vector3d::UnitZ());
     restingPose.orientation = restingPose.orientation * Eigen::Quaterniond(angle);
 */
-#if 1
+#ifndef NO_ROBOT
     // LinearTrajectory and TrajectoryIteratorCartesianVelocity object creation
     LinearTrajectory linearTrajectory(initialPose, restingPose, 0.2, 0.2, 1.e-3);
     auto motionIterator = std::make_unique<TrajectoryIteratorCartesianVelocity>(linearTrajectory);
@@ -209,15 +234,21 @@ int main()
     std::cout << " \aRobot will move to resting pose, press Enter.";
     std::cin.get();
     panda.control(*motionIterator, /*controller_mode = */ franka::ControllerMode::kCartesianImpedance);
-#endif    
+
     // read current pose for debugging
     franka::RobotState currentState = panda.readOnce();
     CartesianPose currentPose(currentState.O_T_EE);
 
     std::cout << "current pose: " << currentPose << std::endl << std::endl;
+#endif
 
     // define trajectory from resting pose along curve
+
+#ifdef NO_ROBOT
+    const double samplingTimestepWidth = 1e-1;
+#else
     const double samplingTimestepWidth = 1e-3;
+#endif
     //SmoothCurveTrajectory curveTrajectory(restingPose, curve, endTime, samplingTimestepWidth);
 
     // define Bezier trajectory
@@ -246,12 +277,16 @@ int main()
       cartesianPoses[i].orientation = Eigen::Quaterniond(angle1) * Eigen::Quaterniond(angle0) * CartesianPose::neutralOrientation;
     }
 
-    int p = 3;
-    int continuity = 2;
+    std::cout << "samplingTimestepWidth: " << samplingTimestepWidth << std::endl;
+
+    int p = 7;
+    int continuity = 6;
+    // multiplicity = p - continuity
     BezierTrajectory curveTrajectory(restingPose, cartesianPoses, p, continuity, endTime, samplingTimestepWidth);
 
-    TrajectoryPlotter trajectoryPlotter(restingPose, std::make_shared<BezierTrajectory>(curveTrajectory), samplingTimestepWidth);
-    trajectoryPlotter.plot();
+    TrajectoryPlotter trajectoryPlotter(restingPose, std::make_shared<BezierTrajectory>(curveTrajectory), cartesianPoses, samplingTimestepWidth);
+
+    exit(0);
 
     // move along trajectory 
     auto curveMotionIterator = std::make_unique<TrajectoryIteratorCartesianVelocity>(curveTrajectory);
@@ -260,8 +295,10 @@ int main()
       << "Afterwards, Enter aborts the movement\a";
     std::cin.ignore();
 
+#ifndef NO_ROBOT
     panda.control(*curveMotionIterator,
                   /*controller_mode = */ franka::ControllerMode::kCartesianImpedance);
+#endif
 
   }
   catch (const franka::Exception &e)
@@ -280,7 +317,9 @@ int main()
     return -10;
   }
 
+#ifndef NO_ROBOT
   panda.automaticErrorRecovery();
+#endif
 
   std::cout << "Motion finished regularly." << std::endl;
   return 0;
