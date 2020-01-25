@@ -1,8 +1,8 @@
-#include "utility/trajectory_iterator_cartesian_velocity.h"
+#include "trajectory_iterator/trajectory_iterator_velocity.h"
 #include "trajectory/linear_trajectory.h"
 #include "trajectory/curve_trajectory.h"
 #include "trajectory/smooth_curve_trajectory.h"
-#include "trajectory/bezier_trajectory.h"
+#include "trajectory/spline_trajectory.h"
 #include "utility/trajectory_plotter.h"
 
 #include <franka/exception.h>
@@ -15,7 +15,7 @@
 
 #include <iostream>
 
-//#define NO_ROBOT
+#define NO_ROBOT
 
 const std::string robot_ip = "172.16.0.2";
 
@@ -36,7 +36,7 @@ CartesianPose curve(double t)
 
   //std::cout << "t: " << t << ", alpha: " << alpha << std::endl;
 
-  double beta = 2*alpha - 1;      // run from -1 to 1
+  //double beta = 2*alpha - 1;      // run from -1 to 1
 
   // determine current pose index for the given alpha (time) value
   const int nPoses = poses.size();
@@ -168,7 +168,7 @@ int main()
   }
 
 
-  typedef BezierTrajectory TrajectoryType;
+  typedef SplineTrajectory TrajectoryType;
 
   const double p = 4;
   const double continuity = 3;
@@ -184,7 +184,7 @@ int main()
   exit(0);
 #endif
 
-  try
+  //try
   {
 
     CartesianPose restingPose;
@@ -242,7 +242,7 @@ int main()
     // define trajectory from resting pose along curve
 
 #ifdef NO_ROBOT
-    const double samplingTimestepWidth = 1e-1;
+    const double samplingTimestepWidth = 1e-3;
 #else
     const double samplingTimestepWidth = 1e-3;
 #endif
@@ -277,44 +277,42 @@ int main()
     int p = 5;
     int continuity = 3;
     // multiplicity = p - continuity
-    BezierTrajectory curveTrajectory(restingPose, cartesianPoses, p, continuity, endTime, samplingTimestepWidth);
+    SplineTrajectory splineTrajectory(restingPose, cartesianPoses, p, continuity, endTime, samplingTimestepWidth);
 
-    std::vector<double> knots;
-    curveTrajectory.getKnots(knots);
+    //TrajectoryIteratorPose splineMotionIterator(splineTrajectory);
+    TrajectoryIteratorVelocity splineMotionIterator(splineTrajectory);
+    //exit(0);
+    // plot trajectory
+    TrajectoryPlotter trajectoryPlotter(restingPose, splineMotionIterator, cartesianPoses);
 
-    TrajectoryPlotter trajectoryPlotter(restingPose, std::make_shared<BezierTrajectory>(curveTrajectory), cartesianPoses, knots, samplingTimestepWidth);
-
-
-    // move along trajectory 
-    auto curveMotionIterator = std::make_unique<TrajectoryIteratorCartesianVelocity>(curveTrajectory);
-    
     std::cout << "\aRobot will move according to trajectory, press Enter." << std::endl 
       << "Afterwards, Enter aborts the movement\a";
     std::cin.ignore();
 
 #ifndef NO_ROBOT
+    // connect again to robot
     franka::Robot panda2(robot_ip);
 
-    panda2.control(*curveMotionIterator,
-                  /*controller_mode = */ franka::ControllerMode::kCartesianImpedance);
+    // move along trajectory
+    panda2.control(splineMotionIterator, franka::ControllerMode::kCartesianImpedance);
 #endif
 
   }
-  catch (const franka::Exception &e)
+  /*catch (const franka::Exception &e)
   {
-    std::cout << e.what() << std::endl;
+    std::cout << "Exception: " << e.what() << std::endl;
     return -1;
   }
   catch (const std::invalid_argument &e)
   {
-    std::cout << e.what() << std::endl;
+    std::cout << "Exception: " << e.what() << std::endl;
     return -2;
   }
   catch (const std::exception &e)
   {
-    std::cout << e.what() << std::endl;
+    std::cout << "Exception: " << e.what() << std::endl;
     return -10;
-  }
+  }*/
 
 #ifndef NO_ROBOT
   //panda.automaticErrorRecovery();

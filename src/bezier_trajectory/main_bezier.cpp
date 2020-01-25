@@ -1,8 +1,8 @@
-#include "utility/trajectory_iterator_cartesian_velocity.h"
+#include "trajectory_iterator/trajectory_iterator_velocity.h"
 #include "trajectory/linear_trajectory.h"
 #include "trajectory/curve_trajectory.h"
 #include "trajectory/smooth_curve_trajectory.h"
-#include "trajectory/bezier_trajectory.h"
+#include "trajectory/spline_trajectory.h"
 
 #include <franka/exception.h>
 #include <franka/robot.h>
@@ -42,7 +42,7 @@ int main()
     
     // LinearTrajectory and TrajectoryIteratorCartesianVelocity object creation
     LinearTrajectory linearTrajectory(initialPose, restingPose, 0.2, 0.2, 1.e-3);
-    auto motionIterator = std::make_unique<TrajectoryIteratorCartesianVelocity>(linearTrajectory);
+    auto motionIterator = std::make_unique<TrajectoryIteratorVelocity>(linearTrajectory);
     
     // move to resting pose
     std::cout << " Robot will move to resting pose, press Enter.";
@@ -69,10 +69,10 @@ int main()
     poses[5].position << -0.1, -0.38625, 0.30;
 
     // CartesianPose initialPose, std::vector<CartesianPose> &poses, double p, double continuity, double endTime, double dt
-    BezierTrajectory bezierTrajectory(restingPose, poses, p, continuity, endTime, samplingTimestepWidth);
+    SplineTrajectory bezierTrajectory(restingPose, poses, p, continuity, endTime, samplingTimestepWidth);
 
     // move along trajectory
-    auto curveMotionIterator = std::make_unique<TrajectoryIteratorCartesianVelocity>(bezierTrajectory);
+    auto curveMotionIterator = std::make_unique<TrajectoryIteratorVelocity>(bezierTrajectory);
     
     std::cout << "Robot will move according to trajectory, press Enter." << std::endl 
       << "Afterwards, Enter aborts the movement\a";
